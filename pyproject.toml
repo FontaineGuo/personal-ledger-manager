@@ -1,0 +1,19 @@
+[project]
+name = "ledger"
+version = "0.1.0"
+description = "对话式个人记账服务（基于 docs/ 设计书）"
+requires-python = ">=3.12"
+dependencies = ["openpyxl>=3.1"]
+
+[project.scripts]
+ledger = "ledger.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/ledger"]
+
+[dependency-groups]
+dev = ["pytest>=8"]

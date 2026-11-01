@@ -15,8 +15,13 @@ from .db import DEFAULT_DB, _configured_db
 HEADER_FONT = Font(bold=True)
 
 
-def _export_dir() -> Path:
-    """导出目录跟随 db 实际位置（云路径部署时 export 也在网盘侧）。"""
+def _export_dir(conn=None) -> Path:
+    """导出目录跟随 db 实际位置（云路径部署时 export 也在网盘侧）。
+    优先取 conn 实际连接的库文件（测试/多库场景不污染配置目录），无 conn 时回退配置解析。"""
+    if conn is not None:
+        row = conn.execute("PRAGMA database_list").fetchone()
+        if row and row[2]:
+            return Path(row[2]).parent / "export"
     db_path = _configured_db() or DEFAULT_DB
     return db_path.parent / "export"
 
@@ -28,7 +33,7 @@ def _autosize(ws) -> None:
 
 
 def export_to_xlsx(conn, path: str | None = None, periods: list[str] | None = None) -> dict:
-    export_dir = _export_dir()
+    export_dir = _export_dir(conn)
     export_dir.mkdir(parents=True, exist_ok=True)
     path = Path(path) if path else export_dir / f"账本导出-{datetime.now():%Y%m%d-%H%M}.xlsx"
     wb = Workbook()
@@ -93,7 +98,7 @@ def export_to_xlsx(conn, path: str | None = None, periods: list[str] | None = No
 
 def export_report_to_xlsx(conn, report: dict, path: str | None = None) -> dict:
     """report: {kind: summary|category|trend|accountFlow|detail, periods?, category?}"""
-    export_dir = _export_dir()
+    export_dir = _export_dir(conn)
     export_dir.mkdir(parents=True, exist_ok=True)
     kind = report.get("kind")
     stamp = datetime.now().strftime("%Y%m%d-%H%M")

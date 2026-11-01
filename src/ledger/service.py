@@ -521,7 +521,8 @@ def query_transactions(conn, f: dict | None = None) -> dict:
     if f.get("category"):
         where.append("category=?"); args.append(f["category"])
     if f.get("account"):
-        where.append("account=? OR transfer_to=?"); args += [f["account"], f["account"]]
+        # 必须加括号：否则 AND 优先级高于 OR，direction 等后续条件会被短路
+        where.append("(account=? OR transfer_to=?)"); args += [f["account"], f["account"]]
     if f.get("direction"):
         where.append("direction=?"); args.append(f["direction"])
     if f.get("noteContains"):

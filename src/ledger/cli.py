@@ -11,6 +11,12 @@ from .exporter import export_report_to_xlsx, export_to_xlsx
 
 
 def _print(result: dict) -> None:
+    # Windows 管道捕获时 stdout 默认用本地编码（GBK），强制 UTF-8 防止跨工具乱码
+    try:
+        if sys.stdout.encoding and sys.stdout.encoding.lower().replace("-", "") != "utf8":
+            sys.stdout.reconfigure(encoding="utf-8")
+    except (AttributeError, OSError):
+        pass
     print(json.dumps(result, ensure_ascii=False, default=str))
 
 
